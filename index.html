@@ -1,49 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+img { max-width: 100%; }
+</style>
 <title>Study Planner</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
 <style>
 /* Layout: one calm column on phones; on wide screens, setup on the left, today's plan on the right. */
 :root {
-  --bg: #f4f7f5;
-  --surface: #ffffff;
-  --fg: #14201c;
-  --muted: #5a6a63;
-  --line: #dce4e0;
-  --accent: #1b7459;
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #faf8fe;
+  --fg: #1c1630;
+  --muted: #655d80;
+  --line: #e4def0;
+  --accent: #6a3fd1;
   --accent-fg: #ffffff;
-  --accent-soft: #e0f0e8;
+  --accent-soft: #ece5fb;
   --danger: #b3302a;
   --danger-soft: #fbe8e5;
   --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0e1713;
-    --surface: #15221d;
-    --fg: #e7f0eb;
-    --muted: #98afa6;
-    --line: #26372f;
-    --accent: #4ac69a;
-    --accent-fg: #05211a;
-    --accent-soft: #1a392e;
-    --danger: #ff8c80;
-    --danger-soft: #3a1e1b;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0e1713;
-  --surface: #15221d;
-  --fg: #e7f0eb;
-  --muted: #98afa6;
-  --line: #26372f;
-  --accent: #4ac69a;
-  --accent-fg: #05211a;
-  --accent-soft: #1a392e;
-  --danger: #ff8c80;
-  --danger-soft: #3a1e1b;
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -59,7 +43,7 @@ body {
 }
 .wrap { max-width: 1040px; margin: 0 auto; }
 h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
-h1 { font-size: 2rem; line-height: 1.1; letter-spacing: -0.01em; }
+h1 { color: var(--accent); font-size: 2rem; line-height: 1.1; letter-spacing: -0.01em; }
 h2 { font-size: 1.1rem; }
 .tagline { color: var(--muted); margin: 6px 0 22px; max-width: 56ch; }
 
