@@ -1,0 +1,459 @@
+<title>Study Planner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one calm column on phones; on wide screens, setup on the left, today's plan on the right. */
+:root {
+  --bg: #f4f7f5;
+  --surface: #ffffff;
+  --fg: #14201c;
+  --muted: #5a6a63;
+  --line: #dce4e0;
+  --accent: #1b7459;
+  --accent-fg: #ffffff;
+  --accent-soft: #e0f0e8;
+  --danger: #b3302a;
+  --danger-soft: #fbe8e5;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1713;
+    --surface: #15221d;
+    --fg: #e7f0eb;
+    --muted: #98afa6;
+    --line: #26372f;
+    --accent: #4ac69a;
+    --accent-fg: #05211a;
+    --accent-soft: #1a392e;
+    --danger: #ff8c80;
+    --danger-soft: #3a1e1b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1713;
+  --surface: #15221d;
+  --fg: #e7f0eb;
+  --muted: #98afa6;
+  --line: #26372f;
+  --accent: #4ac69a;
+  --accent-fg: #05211a;
+  --accent-soft: #1a392e;
+  --danger: #ff8c80;
+  --danger-soft: #3a1e1b;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1040px; margin: 0 auto; }
+h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+h1 { font-size: 2rem; line-height: 1.1; letter-spacing: -0.01em; }
+h2 { font-size: 1.1rem; }
+.tagline { color: var(--muted); margin: 6px 0 22px; max-width: 56ch; }
+
+.layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.stack { display: grid; gap: 16px; min-width: 0; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.sub { color: var(--muted); font-size: 0.85rem; }
+
+label, .label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+input[type="text"], input[type="number"], input[type="date"] {
+  width: 100%; font: inherit; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px; min-height: 40px;
+}
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 480px) { .row.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.field { min-width: 0; }
+.hint { font-size: 0.8rem; color: var(--muted); margin-top: 5px; min-height: 1.2em; }
+.hint.error { color: var(--danger); }
+
+.levels { display: flex; gap: 8px; flex-wrap: wrap; }
+.levels input { position: absolute; opacity: 0; pointer-events: none; }
+.levels label {
+  margin: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border: 1px solid var(--line); border-radius: 7px;
+  font-size: 0.88rem; font-weight: 500; color: var(--fg); letter-spacing: 0; background: var(--bg);
+}
+.levels input:checked + label { border-color: var(--accent); background: var(--accent-soft); }
+.levels input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dots { display: inline-flex; gap: 3px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--muted); display: block; }
+.dots i.on { background: var(--accent); border-color: var(--accent); }
+
+button {
+  font: inherit; font-weight: 600; font-size: 0.9rem; cursor: pointer; min-height: 40px;
+  border-radius: 7px; padding: 8px 16px; border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+}
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+button.small { min-height: 32px; padding: 4px 11px; font-size: 0.82rem; }
+button.danger { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+.notice { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 0.85rem; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 14px; }
+
+.subjects { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.subjects li { display: grid; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.subj-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.subj-name { font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
+.subj-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 0.85rem; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; background: var(--accent-soft); color: var(--fg); }
+.pill.urgent { background: var(--danger-soft); color: var(--danger); }
+.pill.over { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
+.subj-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.empty { color: var(--muted); padding: 18px 0 4px; }
+
+.plan-total { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; }
+.plan-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.plan-item .line1 { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.plan-item .pname { font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
+.plan-item .ptime { font-family: var(--font-display); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.track { height: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; margin: 7px 0 5px; overflow: hidden; }
+.fill { height: 100%; background: var(--accent); border-radius: 999px; }
+.plan-item .pmeta { color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.tip { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+.how { margin-top: 12px; color: var(--muted); font-size: 0.82rem; }
+.how b { color: var(--fg); font-weight: 600; }
+textarea.copybox { width: 100%; margin-top: 12px; min-height: 140px; font-family: ui-monospace, Consolas, monospace; font-size: 0.82rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 10px; }
+.foot { margin-top: 22px; color: var(--muted); font-size: 0.8rem; }
+a.btn { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px; border-radius: 7px; background: var(--accent); color: var(--accent-fg); font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+a.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) { .fill { transition: width 0.3s ease; } }
+</style>
+
+<div class="wrap">
+  <h1>Study Planner</h1>
+  <p class="tagline">Add your subjects and exam dates. Get a daily plan that gives more time to harder subjects and nearer exams.</p>
+
+  <div class="layout">
+    <div class="stack">
+      <section class="card" aria-labelledby="h-details">
+        <div class="card-head"><h2 id="h-details">Your details</h2></div>
+        <div class="row two">
+          <div class="field">
+            <label for="name">Name</label>
+            <input type="text" id="name" autocomplete="given-name" placeholder="Your name">
+          </div>
+          <div class="field">
+            <label for="hours">Study hours per day</label>
+            <input type="number" id="hours" min="0.5" max="16" step="0.5" inputmode="decimal" placeholder="e.g. 4">
+          </div>
+        </div>
+        <div class="hint" id="hours-hint"></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-subjects">
+        <div class="card-head">
+          <h2 id="h-subjects">Subjects and exams</h2>
+          <span class="sub" id="subj-count"></span>
+        </div>
+
+        <div class="notice" id="sample-notice" hidden>
+          <span>These are sample subjects so you can see how it works.</span>
+          <button type="button" class="small" id="clear-sample">Start with my own</button>
+        </div>
+
+        <form id="subject-form" novalidate>
+          <div class="row two">
+            <div class="field">
+              <label for="s-name">Subject name</label>
+              <input type="text" id="s-name" placeholder="e.g. Data Structures" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="s-date">Exam date</label>
+              <input type="date" id="s-date">
+            </div>
+          </div>
+          <div class="field" style="margin-top:12px">
+            <span class="label">Difficulty</span>
+            <div class="levels" role="radiogroup" aria-label="Difficulty">
+              <input type="radio" name="level" id="lv1" value="1"><label for="lv1"><span class="dots"><i class="on"></i><i></i><i></i></span>Easy</label>
+              <input type="radio" name="level" id="lv2" value="2" checked><label for="lv2"><span class="dots"><i class="on"></i><i class="on"></i><i></i></span>Medium</label>
+              <input type="radio" name="level" id="lv3" value="3"><label for="lv3"><span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i></span>Hard</label>
+            </div>
+          </div>
+          <div class="hint" id="form-hint"></div>
+          <div class="actions">
+            <button type="submit" class="primary" id="form-submit">Add subject</button>
+            <button type="button" id="form-cancel" hidden>Cancel</button>
+          </div>
+        </form>
+
+        <ul class="subjects" id="subject-list"></ul>
+      </section>
+    </div>
+
+    <section class="card" aria-labelledby="h-plan">
+      <div class="card-head">
+        <h2 id="h-plan">Today's plan</h2>
+        <span class="sub" id="plan-date"></span>
+      </div>
+      <div id="plan-body"></div>
+      <div class="actions" id="plan-actions" hidden>
+        <button type="button" id="copy-plan">Copy plan as text</button>
+      </div>
+      <textarea class="copybox" id="copybox" readonly hidden aria-label="Plan text"></textarea>
+      <p class="how"><b>How it works:</b> each subject gets a weight of difficulty (Easy 1, Medium 2, Hard 3) times urgency (exam within 7 days ×2, within 14 days ×1.5, later ×1). Your daily hours are shared out by weight. Finished exams are left out.</p>
+    </section>
+  </div>
+
+  <section class="card" id="feedback-card" hidden style="margin-top:16px" aria-labelledby="h-feedback">
+    <h2 id="h-feedback">Tell me what you think</h2>
+    <p class="sub" style="margin:6px 0 0">Was anything confusing, or is there a feature you want? A short note helps me improve this planner.</p>
+    <div class="actions"><a class="btn" id="feedback-link" href="#" target="_blank" rel="noopener">Give feedback</a></div>
+  </section>
+
+  <p class="foot">Your subjects are saved in this browser on this device. Nobody else can see them.</p>
+</div>
+
+<script>
+var KEY = "study-planner-v1";
+var LEVELS = { 1: "Easy", 2: "Medium", 3: "Hard" };
+
+// <logic>
+function todayLocal() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function pad(n) { return (n < 10 ? "0" : "") + n; }
+function toISO(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function parseISO(s) { var p = s.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+function fmtDate(iso) { var p = iso.split("-"); return p[2] + "-" + p[1] + "-" + p[0]; }
+function daysLeft(iso) { return Math.round((parseISO(iso) - todayLocal()) / 86400000); }
+function countdownText(iso) {
+  var d = daysLeft(iso);
+  if (d < 0) return "Exam over";
+  if (d === 0) return "Exam is today";
+  if (d === 1) return "1 day left";
+  return d + " days left";
+}
+function weight(s) {
+  var d = daysLeft(s.exam);
+  var urgency = d <= 7 ? 2 : d <= 14 ? 1.5 : 1;
+  return s.level * urgency;
+}
+function fmtHours(h) {
+  var total = Math.round(h * 60);
+  var hh = Math.floor(total / 60), mm = total % 60;
+  if (hh && mm) return hh + " hr " + mm + " min";
+  if (hh) return hh + " hr";
+  return mm + " min";
+}
+function buildPlan(state) {
+  var hours = parseFloat(state.hours);
+  var active = state.subjects.filter(function (s) { return daysLeft(s.exam) >= 0; });
+  if (!active.length || !(hours > 0)) return [];
+  var total = active.reduce(function (a, s) { return a + weight(s); }, 0);
+  return active.map(function (s) {
+    return { subject: s, hours: hours * weight(s) / total, share: weight(s) / total };
+  }).sort(function (a, b) { return b.hours - a.hours; });
+}
+function planText(state, plan) {
+  var lines = [
+    "Study plan for " + (state.name || "you") + " - " + fmtDate(toISO(todayLocal())),
+    "Total study time today: " + fmtHours(parseFloat(state.hours)),
+    "--------------------------------------------------------"
+  ];
+  plan.forEach(function (p) {
+    var name = p.subject.name; while (name.length < 20) name += " ";
+    var t = fmtHours(p.hours); while (t.length < 12) t += " ";
+    lines.push(name + t + "(" + LEVELS[p.subject.level] + ", " + countdownText(p.subject.exam) + ")");
+  });
+  lines.push("--------------------------------------------------------");
+  lines.push("Tip: take a 5 minute break after every 45 minutes.");
+  return lines.join("\n");
+}
+// </logic>
+
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function $(id) { return document.getElementById(id); }
+
+function sampleState() {
+  var t = todayLocal();
+  function inDays(n) { var d = new Date(t.getFullYear(), t.getMonth(), t.getDate() + n); return toISO(d); }
+  return {
+    name: "", hours: "4", sample: true, nextId: 5,
+    subjects: [
+      { id: 1, name: "Data Structures", level: 3, exam: inDays(5) },
+      { id: 2, name: "Python Programming", level: 2, exam: inDays(12) },
+      { id: 3, name: "Digital Electronics", level: 1, exam: inDays(20) },
+      { id: 4, name: "Mathematics", level: 3, exam: inDays(30) }
+    ]
+  };
+}
+function loadState() {
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { var s = JSON.parse(raw); if (s && Array.isArray(s.subjects)) return s; }
+  } catch (e) {}
+  return sampleState();
+}
+var state = loadState();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+var editingId = null;
+var deletingId = null;
+
+function renderSubjects() {
+  var list = $("subject-list");
+  $("sample-notice").hidden = !state.sample;
+  $("subj-count").textContent = state.subjects.length ? state.subjects.length + (state.subjects.length === 1 ? " subject" : " subjects") : "";
+  if (!state.subjects.length) {
+    list.innerHTML = '<li class="empty">No subjects yet. Add your first subject above.</li>';
+    return;
+  }
+  var sorted = state.subjects.slice().sort(function (a, b) { return daysLeft(a.exam) - daysLeft(b.exam); });
+  list.innerHTML = sorted.map(function (s) {
+    var d = daysLeft(s.exam);
+    var cls = d < 0 ? "over" : d <= 7 ? "urgent" : "";
+    var dots = [1, 2, 3].map(function (n) { return '<i class="' + (n <= s.level ? "on" : "") + '"></i>'; }).join("");
+    var actions = deletingId === s.id
+      ? '<span class="sub">Delete this subject?</span><button type="button" class="small danger" data-act="confirm-delete" data-id="' + s.id + '">Yes, delete</button><button type="button" class="small" data-act="cancel-delete" data-id="' + s.id + '">Keep</button>'
+      : '<button type="button" class="small" data-act="edit" data-id="' + s.id + '">Edit</button><button type="button" class="small" data-act="delete" data-id="' + s.id + '">Delete</button>';
+    return '<li><div class="subj-top"><span class="subj-name">' + esc(s.name) + '</span><span class="pill ' + cls + '">' + countdownText(s.exam) + '</span></div>' +
+      '<div class="subj-meta"><span style="display:inline-flex;align-items:center;gap:7px"><span class="dots">' + dots + '</span>' + LEVELS[s.level] + '</span><span>Exam ' + fmtDate(s.exam) + '</span></div>' +
+      '<div class="subj-actions">' + actions + '</div></li>';
+  }).join("");
+}
+
+function renderPlan() {
+  var body = $("plan-body");
+  $("plan-date").textContent = fmtDate(toISO(todayLocal()));
+  var hours = parseFloat(state.hours);
+  $("plan-actions").hidden = true;
+  $("copybox").hidden = true;
+  if (!(hours >= 0.5 && hours <= 16)) {
+    body.innerHTML = '<p class="empty">Enter how many hours you can study per day, between 0.5 and 16.</p>';
+    return;
+  }
+  var plan = buildPlan(state);
+  if (!plan.length) {
+    body.innerHTML = '<p class="empty">Add a subject with a future exam date to see your plan.</p>';
+    return;
+  }
+  var greeting = state.name ? "Hi " + esc(state.name) + ", here is your day" : "Here is your day";
+  body.innerHTML =
+    '<p class="sub" style="margin:0">' + greeting + '</p>' +
+    '<div class="plan-total" style="margin:2px 0 16px">' + fmtHours(hours) + ' of study</div>' +
+    '<ul class="plan-list">' + plan.map(function (p) {
+      var pct = Math.round(p.share * 100);
+      return '<li class="plan-item"><div class="line1"><span class="pname">' + esc(p.subject.name) + '</span><span class="ptime">' + fmtHours(p.hours) + '</span></div>' +
+        '<div class="track"><div class="fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="pmeta">' + LEVELS[p.subject.level] + ' · ' + countdownText(p.subject.exam) + ' · ' + pct + '% of your time</div></li>';
+    }).join("") + '</ul>' +
+    '<p class="tip">Take a 5 minute break after every 45 minutes.</p>';
+  $("plan-actions").hidden = false;
+}
+
+function renderAll() { renderSubjects(); renderPlan(); }
+
+function setHint(id, msg, isError) { var el = $(id); el.textContent = msg || ""; el.className = "hint" + (isError ? " error" : ""); }
+
+function resetForm() {
+  editingId = null;
+  $("s-name").value = ""; $("s-date").value = "";
+  $("lv2").checked = true;
+  $("form-submit").textContent = "Add subject";
+  $("form-cancel").hidden = true;
+  setHint("form-hint", "");
+}
+
+$("name").addEventListener("input", function () { state.name = this.value.trim(); save(); renderPlan(); });
+$("hours").addEventListener("input", function () {
+  var v = this.value.trim();
+  state.hours = v; save();
+  var n = parseFloat(v);
+  if (v && !(n >= 0.5 && n <= 16)) setHint("hours-hint", "Please enter a number between 0.5 and 16.", true);
+  else setHint("hours-hint", "");
+  renderPlan();
+});
+
+$("clear-sample").addEventListener("click", function () {
+  state.subjects = []; state.sample = false; deletingId = null; save(); resetForm(); renderAll();
+  $("s-name").focus();
+});
+
+$("subject-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var name = $("s-name").value.trim();
+  var date = $("s-date").value;
+  var level = parseInt(document.querySelector('input[name="level"]:checked').value, 10);
+  if (!name) { setHint("form-hint", "Please enter the subject name.", true); return; }
+  var dup = state.subjects.some(function (s) { return s.id !== editingId && s.name.toLowerCase() === name.toLowerCase(); });
+  if (dup) { setHint("form-hint", name + " is already in your list.", true); return; }
+  if (!date) { setHint("form-hint", "Please choose the exam date.", true); return; }
+  if (daysLeft(date) < 0) { setHint("form-hint", "That exam date is already over. Please choose a future date.", true); return; }
+
+  if (editingId !== null) {
+    state.subjects = state.subjects.map(function (s) { return s.id === editingId ? { id: s.id, name: name, level: level, exam: date } : s; });
+    state.sample = false;
+  } else {
+    if (state.sample) { state.subjects = []; state.sample = false; }
+    state.nextId = (state.nextId || 1) + 1;
+    state.subjects.push({ id: state.nextId, name: name, level: level, exam: date });
+  }
+  save(); resetForm(); renderAll();
+});
+
+$("form-cancel").addEventListener("click", resetForm);
+
+$("subject-list").addEventListener("click", function (e) {
+  var btn = e.target.closest("button[data-act]");
+  if (!btn) return;
+  var id = parseInt(btn.getAttribute("data-id"), 10);
+  var act = btn.getAttribute("data-act");
+  if (act === "edit") {
+    var s = state.subjects.filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    editingId = id; deletingId = null;
+    $("s-name").value = s.name; $("s-date").value = s.exam;
+    $("lv" + s.level).checked = true;
+    $("form-submit").textContent = "Save changes";
+    $("form-cancel").hidden = false;
+    setHint("form-hint", "Editing " + s.name + ".");
+    renderSubjects();
+    $("s-name").focus();
+  } else if (act === "delete") {
+    deletingId = id; renderSubjects();
+  } else if (act === "cancel-delete") {
+    deletingId = null; renderSubjects();
+  } else if (act === "confirm-delete") {
+    state.subjects = state.subjects.filter(function (x) { return x.id !== id; });
+    state.sample = false; deletingId = null;
+    if (editingId === id) resetForm();
+    save(); renderAll();
+  }
+});
+
+$("copy-plan").addEventListener("click", function () {
+  var text = planText(state, buildPlan(state));
+  var box = $("copybox");
+  function showBox() { box.value = text; box.hidden = false; box.focus(); box.select(); }
+  try {
+    navigator.clipboard.writeText(text).then(function () {
+      $("copy-plan").textContent = "Copied";
+      setTimeout(function () { $("copy-plan").textContent = "Copy plan as text"; }, 1800);
+    }, showBox);
+  } catch (e) { showBox(); }
+});
+
+// Paste your Google Form link between the quotes to show the feedback box.
+var FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSf3seUu1ZO2QlqEzU1RgfOw0CkJpvUD8iq2NCC6WF5q4sgdrQ/viewform";
+if (FEEDBACK_URL) { $("feedback-link").href = FEEDBACK_URL; $("feedback-card").hidden = false; }
+
+$("name").value = state.name || "";
+$("hours").value = state.hours || "";
+renderAll();
+</script>
